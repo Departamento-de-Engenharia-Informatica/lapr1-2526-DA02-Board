@@ -25,7 +25,7 @@ public class Main {
             if (colunas == -1) {
                 colunas = partes.length;
             } else if (colunas != partes.length) {
-                System.out.println("Erro: linhas têm número diferente de colunas no ficheiro " + filename);
+                System.out.println("linhas tem número diferente de colunas no ficheiro " + filename);
                 System.exit(0);
             }
 
@@ -33,7 +33,7 @@ public class Main {
         }
 
         if (linhas != colunas) {
-            System.out.println("Erro: matriz não é quadrada no ficheiro " + filename);
+            System.out.println("matriz não e quadrada no ficheiro " + filename);
             System.exit(0);
         }
 
@@ -62,32 +62,73 @@ public class Main {
         return matriz;
     }
 
-    public static int[][] somarMatrizes(int[][] A, int[][] B) {
-        int n = A.length;
-        int[][] C = new int[n][n];
+    public static boolean burningDhar(int[][] matriz) {
+        int ordem = matriz.length;
+        boolean[][] matrizQueimada = new boolean[ordem][ordem];
+        boolean mudou;
 
-        for (int i = 0; i < n; i++) {
-            for (int j = 0; j < n; j++) {
-                C[i][j] = A[i][j] + B[i][j];
+        do {
+            mudou = false;
+
+            for (int i = 0; i < ordem; i++) {
+                for (int j = 0; j < ordem; j++) {
+
+                    int nVizinhos = 0;
+
+                    if (!matrizQueimada[i][j]) {
+                        if (i > 0 && !matrizQueimada[i - 1][j]) nVizinhos++; //cima
+                        if (i < ordem - 1 && !matrizQueimada[i + 1][j]) nVizinhos++; // baixo
+                        if (j > 0 && !matrizQueimada[i][j - 1]) nVizinhos++; // esquerda
+                        if (j < ordem - 1 && !matrizQueimada[i][j + 1]) nVizinhos++; //direita
+
+                        if (matriz[i][j] >= nVizinhos) {
+                            matrizQueimada[i][j] = true;
+                            mudou = true;
+                        }
+                    }
+                }
+            }
+        } while (mudou);
+
+        for (int i = 0; i < ordem; i++) {
+            for (int j = 0; j < ordem; j++) {
+                if (!matrizQueimada[i][j]) {
+                    return false;
+                }
             }
         }
-        return C;
+        return true;
     }
 
-    public static void estabilizar(int[][] grid) {
+    public static int[][] somarMatrizes(int[][] matrizA, int[][] matrizB) {
+        int ordem = matrizA.length;
+        int[][] matrizSoma = new int[ordem][ordem];
+
+        for (int i = 0; i < ordem; i++) {
+            for (int j = 0; j < ordem; j++) {
+                matrizSoma[i][j] = matrizA[i][j] + matrizB[i][j];
+            }
+        }
+        return matrizSoma;
+    }
+
+    public static void estabilizar(int[][] matriz) {
         boolean instavel = true;
 
         while (instavel) {
             instavel = false;
 
-            for (int i = 0; i < grid.length; i++) {
-                for (int j = 0; j < grid.length; j++) {
-                    if (grid[i][j] >= LIMITE) {
+            for (int i = 0; i < matriz.length; i++) {
+                for (int j = 0; j < matriz.length; j++) {
+                    if (matriz[i][j] >= LIMITE) {
                         instavel = true;
-                        topple(grid, i, j);
+                        topple(matriz, i, j);
                     }
                 }
             }
+
+
+            // guardar na imagem
         }
     }
 
@@ -96,8 +137,8 @@ public class Main {
 
         if (i > 0) grid[i - 1][j]++; // logo acima
         if (i < grid.length - 1) grid[i + 1][j]++; // logo abaixo do valor
-        if (j > 0) grid[i][j - 1]++; // á esquerda do valor
-        if (j < grid.length - 1) grid[i][j + 1]++;// á direita do valor
+        if (j > 0) grid[i][j - 1]++; // a esquerda do valor
+        if (j < grid.length - 1) grid[i][j + 1]++;// a direita do valor
     }
 
 
@@ -136,5 +177,12 @@ public class Main {
 
         System.out.println("Estabilizada:");
         imprimir(soma);
+
+        boolean eRecorrente = burningDhar(soma);
+        if (eRecorrente) {
+            System.out.println("A matriz é recorrente");
+        } else {
+            System.out.println("A matriz não e recorrente");
+        }
     }
 }
