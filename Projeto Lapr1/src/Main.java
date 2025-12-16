@@ -56,9 +56,9 @@ public class Main {
 
     public static int[][] lerMatriz(String filename) throws FileNotFoundException {
 
-        // ---------------------------
+        // --------------------------
         // Validar a matriz do ficheiro
-        // ---------------------------
+        // --------------------------
 
         Scanner scanner = new Scanner(new File(filename));
 
