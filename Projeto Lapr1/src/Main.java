@@ -332,7 +332,7 @@ public class Main {
 
         int ordem = resultados[0].length;
 
-        System.out.println("valor proprio");
+        System.out.println("valores próprios");
 
         System.out.print("[ ");
         for (int i = 0; i < ordem; i++) {
