@@ -2,6 +2,13 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Scanner;
 import java.io.PrintWriter;
+import org.apache.commons.math4.legacy.linear.LUDecomposition;
+import org.apache.commons.math4.legacy.linear.EigenDecomposition;
+import org.apache.commons.math4.legacy.linear.MatrixUtils;
+import org.apache.commons.math4.legacy.linear.RealMatrix;
+import org.apache.commons.math4.legacy.linear.RealVector;
+
+
 
 public class Main {
 
@@ -216,7 +223,7 @@ public class Main {
 
             for (int i = 0; i < linhas; i++) {
                 for (int j = 0; j < colunas; j++) {
-                    if (matriz[i][j] >= VALOR_CRITICO) {
+                    while (matriz[i][j] >= VALOR_CRITICO) {
                         instavel = true;
                         topple(matriz, i, j);
                     }
@@ -238,13 +245,14 @@ public class Main {
         } else {
 
             double passo = (double) (contadorMatrizes - 1) / 19;
-
+            System.out.println(" AAA ");
+            System.out.println(" AAA ");
+            System.out.println(" AAA ");
             for (int i = 0; i < 20; i++) {
                 int indice = (int) Math.round(i * passo);
                 escreverImagem(historico[indice], i, imageWriter);
             }
         }
-
         return matriz;
     }
 
@@ -269,13 +277,96 @@ public class Main {
         System.out.println();
     }
 
+    public static double determinanteLaplaciana(int[][] laplaciana) {
+
+        int n = laplaciana.length;
+        double[][] matrizDouble = new double[n][n];
+
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                matrizDouble[i][j] = laplaciana[i][j];
+            }
+        }
+
+        RealMatrix matrix = MatrixUtils.createRealMatrix(matrizDouble);
+        LUDecomposition lu = new LUDecomposition(matrix);
+
+        return lu.getDeterminant();
+    }
+
+    public static double[][] espectroLaplaciana(int[][] laplaciana) {
+
+        int ordem = laplaciana.length;
+        double[][] matrizDouble = new double[ordem][ordem];
+
+        for (int i = 0; i < ordem; i++) {
+            for (int j = 0; j < ordem; j++) {
+                matrizDouble[i][j] = laplaciana[i][j];
+            }
+        }
+
+        RealMatrix matriz = MatrixUtils.createRealMatrix(matrizDouble);
+        EigenDecomposition decomposicao = new EigenDecomposition(matriz);
+
+        double[][] resultados = new double[ordem + 1][ordem]; // o ordem + 1 é para ser uma matriz de resultados e possiblitar guardar os valores proprios na primeira linha da matriz, sendo as outras linhas preenchidas pelos vetores proprios de cada linha da matriz laplaciana
+
+        for (int k = 0; k < ordem; k++) {
+            double valorProprio = decomposicao.getRealEigenvalue(k);
+            resultados[0][k] = Math.floor(valorProprio * 1000.0) / 1000.0;
+        }
+
+        for (int k = 0; k < ordem; k++) {
+            RealVector vetorProprio = decomposicao.getEigenvector(k);
+
+            for (int i = 0; i < ordem; i++) {
+                double valor = vetorProprio.getEntry(i);
+                resultados[k + 1][i] = (Math.floor(valor * 1000.0) / 1000.0);
+            }
+        }
+
+        return resultados;
+    }
+
+
+    public static void imprimirEspectro(double[][] resultados) {
+
+        int ordem = resultados[0].length;
+
+        System.out.println("valor proprio");
+
+        System.out.print("[ ");
+        for (int i = 0; i < ordem; i++) {
+            System.out.print(resultados[0][i]);
+            if (i < ordem - 1) {
+                System.out.print(", ");
+            }
+        }
+        System.out.println(" ]");
+
+        System.out.println("vetores proprios");
+
+
+        for (int i = 1; i <= ordem; i++) {
+            System.out.print("[ ");
+            for (int j = 0; j < ordem; j++) {
+                System.out.print(resultados[i][j]);
+                if (j < ordem - 1) {
+                    System.out.print(", ");
+                }
+            }
+            System.out.println(" ]");
+        }
+    }
+
+
+
     public static void main(String[] args) throws FileNotFoundException {
 
-        int[][] A = lerMatriz("input/matrizC");
-        int[][] B = lerMatriz("input/matrizD");
+        int[][] A = lerMatriz("input/matrizA");
+        int[][] B = lerMatriz("input/matrizB");
 
         if (A.length != B.length) {
-            System.out.println("Erro: matrizes têm ordens diferentes.");
+            System.out.println("matrizes têm ordens diferentes.");
             return;
         }
 
@@ -289,7 +380,7 @@ public class Main {
 
         System.out.println("Soma:");
         imprimir(soma);
-
+        System.out.println();
         int[][] matrizEstabilizada = estabilizar(soma);
 
         System.out.println("Estabilizada:");
@@ -304,7 +395,11 @@ public class Main {
             System.out.println("A matriz não e recorrente");
         }
         int[][] matrizLaplaciana = laplacianaReduzida(matrizEstabilizada.length);
+        int determinanteLaplaciana = (int) Math.round(determinanteLaplaciana(matrizLaplaciana)); // duvida aqui (arredondar sempre para cima ou acima de 0.5 arredondar para cima ? (Math.ceil ou Math.round))
 
+        System.out.println("Determinante da Laplaciana = " + determinanteLaplaciana);
+        double[][] res = espectroLaplaciana(matrizLaplaciana);
 
+        imprimirEspectro(res);
     }
 }
