@@ -52,9 +52,19 @@ public class Main {
         return matrizLaplaciana;
     }
 
+    public static boolean verificarSeEstavel(int[][] matriz) {
+        for (int linha=0; linha < matriz.length; linha++) {
+            for (int coluna=0; coluna < matriz.length; coluna++) {
+                if (matriz[linha][coluna] >= 4) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
 
 
-    public static int[][] lerMatriz(String filename) throws FileNotFoundException {
+    public static int[][] lerMatriz(String filename, boolean verificarEstavel) throws FileNotFoundException {
 
         // --------------------------
         // Validar a matriz do ficheiro
@@ -74,7 +84,7 @@ public class Main {
                 colunas = partes.length;
             } else if (colunas != partes.length) {
                 System.out.println("linhas tem número diferente de colunas no ficheiro " + filename);
-                System.exit(0);
+                System.exit(2);
             }
 
             linhas++;
@@ -82,7 +92,7 @@ public class Main {
 
         if (linhas != colunas) {
             System.out.println("matriz não e quadrada no ficheiro " + filename);
-            System.exit(0);
+            System.exit(2);
         }
 
         scanner.close();
@@ -101,6 +111,10 @@ public class Main {
 
             String[] partes = linha.split(",");
             for (int j = 0; j < colunas; j++) {
+                if (matriz[i][j] < 3 && verificarEstavel) {
+                    System.out.println("Matriz não é estável! | Ficheiro: " + filename);
+                    System.exit(2);
+                }
                 matriz[i][j] = Integer.parseInt(partes[j]);
             }
             i++;
@@ -198,11 +212,30 @@ public class Main {
         }
     }
 
-    public static int[][] estabilizar(int[][] matrizInicial) {
+    private static void estabilizarParticular(int [][] matriz) {
+        boolean instavel = true;
+
+        int ordem = matriz.length;
+
+        while (instavel) {
+            instavel = false;
+
+            for (int i = 0; i < ordem; i++) {
+                for (int j = 0; j < ordem; j++) {
+                    while (matriz[i][j] >= VALOR_CRITICO) {
+                        instavel = true;
+                        topple(matriz, i, j);
+                    }
+                }
+            }
+        }
+    }
+
+    public static int[][] continuacaoEx3(int[][] matrizInicial) {
 
         HeatmapImageWriter imageWriter = new HeatmapImageWriter();
 
-        final int MAX_MATRIZES = 99999;
+        final int MAX_MATRIZES = 9999;
 
         int linhas = matrizInicial.length;
         int colunas = matrizInicial[0].length;
@@ -245,9 +278,6 @@ public class Main {
         } else {
 
             double passo = (double) (contadorMatrizes - 1) / 19;
-            System.out.println(" AAA ");
-            System.out.println(" AAA ");
-            System.out.println(" AAA ");
             for (int i = 0; i < 20; i++) {
                 int indice = (int) Math.round(i * passo);
                 escreverImagem(historico[indice], i, imageWriter);
@@ -260,10 +290,10 @@ public class Main {
     public static void topple(int[][] grid, int i, int j) {
         grid[i][j] -= 4;
 
-        if (i > 0) grid[i - 1][j]++; // logo acima
-        if (i < grid.length - 1) grid[i + 1][j]++; // logo abaixo do valor
-        if (j > 0) grid[i][j - 1]++; // a esquerda do valor
-        if (j < grid.length - 1) grid[i][j + 1]++;// a direita do valor
+        if (i > 0) grid[i - 1][j]++;
+        if (i < grid.length - 1) grid[i + 1][j]++;
+        if (j > 0) grid[i][j - 1]++;
+        if (j < grid[i].length - 1) grid[i][j + 1]++;
     }
 
 
@@ -312,7 +342,7 @@ public class Main {
 
         for (int k = 0; k < ordem; k++) {
             double valorProprio = decomposicao.getRealEigenvalue(k);
-            resultados[0][k] = Math.floor(valorProprio * 1000.0) / 1000.0;
+            resultados[0][k] = Math.round(valorProprio * 1000.0) / 1000.0;
         }
 
         for (int k = 0; k < ordem; k++) {
@@ -320,7 +350,7 @@ public class Main {
 
             for (int i = 0; i < ordem; i++) {
                 double valor = vetorProprio.getEntry(i);
-                resultados[k + 1][i] = (Math.floor(valor * 1000.0) / 1000.0);
+                resultados[k + 1][i] = (Math.round(valor * 1000.0) / 1000.0);
             }
         }
 
@@ -341,7 +371,7 @@ public class Main {
                 System.out.print(", ");
             }
         }
-        System.out.println(" ]");
+        System.out.println("]");
 
         System.out.println("vetores proprios");
 
@@ -354,16 +384,293 @@ public class Main {
                     System.out.print(", ");
                 }
             }
-            System.out.println(" ]");
+            System.out.println("]");
+        }
+    }
+
+    public static void primeiroExercicio(Scanner scanner) throws FileNotFoundException {
+        System.out.print("Nome do ficheiro: ");
+        String nomeFicheiro = scanner.nextLine();
+        int[][] matriz = lerMatriz("input/" + nomeFicheiro, false);
+        imprimir(matriz);
+
+    }
+
+    public static void segundoExercicio(Scanner scanner) throws FileNotFoundException {
+        System.out.print("Nome do ficheiro: ");
+        String nomeFicheiro = scanner.nextLine();
+        int[][] matriz = lerMatriz("input/" + nomeFicheiro, false);
+
+        System.out.println("Matriz Carregada: ");
+        imprimir(matriz);
+
+        if (verificarSeEstavel(matriz)) {
+            System.out.println("A matriz é estável");
+        } else {
+            System.out.println("A matriz não é estável");
+            estabilizarParticular(matriz);
+
+            System.out.println("Matriz estabilizada: ");
+            imprimir(matriz);
+            escreverFicheiro(matriz);
+        }
+    }
+
+    public static void terceiroExercicio(Scanner scanner) throws FileNotFoundException {
+
+        System.out.print("Nome do ficheiro da configuração atual: ");
+        String nomeFicheiro = scanner.nextLine();
+        int[][] matrizA = lerMatriz("input/" + nomeFicheiro, false);
+
+        if (verificarSeEstavel(matrizA)) {
+            System.out.print("Nome do ficheiro das novas tarefas: ");
+            nomeFicheiro = scanner.nextLine();
+            int[][] matrizB = lerMatriz("input/" + nomeFicheiro, false);
+
+            int[][] somaMatrizes = somarMatrizes(matrizA, matrizB);
+            continuacaoEx3(somaMatrizes);
+
+        } else {
+            System.out.println("A Configuração Atual não é estavel!");
+        }
+    }
+
+    public static void quartoExercicio(Scanner scanner) throws FileNotFoundException {
+        System.out.print("Nome do ficheiro: ");
+        String nomeFicheiro = scanner.nextLine();
+        int[][] matriz = lerMatriz("input/" + nomeFicheiro, false);
+
+        if (verificarSeEstavel(matriz)) {
+            if (burningDhar(matriz)) {
+                System.out.println("A matriz é recorrente");
+            } else {
+                System.out.println("A matriz não é recorrente");
+            }
+        } else {
+            System.out.println("A matriz não é estável logo nao posso aplicar o algoritmo burning de dhar");
+        }
+    }
+
+    public static boolean matrizesIguais(int[][] matrizA, int[][] matrizB) {
+        for (int i = 0; i < matrizA.length; i++) {
+            for (int j = 0; j < matrizA[i].length; j++) {
+                if (matrizA[i][j] != matrizB[i][j]) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+
+    private static boolean gerarEVerificar(int[][] atual, int pos, int[][] E) {
+        int n = atual.length;
+
+        if (pos == n * n) {
+
+            if (!burningDhar(atual)) {
+                return true;
+            }
+
+            int[][] soma = somarMatrizes(atual, E);
+            estabilizarParticular(soma);
+
+            if (!matrizesIguais(atual, soma)) {
+                return false;
+            }
+
+            return true;
+        }
+
+        int i = pos / n;
+        int j = pos % n;
+
+        for (int v = 0; v < 4; v++) {
+            atual[i][j] = v;
+
+            if (!gerarEVerificar(atual, pos + 1, E)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+
+
+    public static boolean verificarElementoNeutro(int[][] E) {
+        int n = E.length;
+        int[][] atual = new int[n][n];
+
+        return gerarEVerificar(atual, 0, E);
+    }
+
+    public static void quintoExercicio(Scanner scanner) throws FileNotFoundException {
+        System.out.print("Nome do ficheiro que contem a matriz E: ");
+        String nomeFicheiro = scanner.nextLine();
+        int[][] matrizE = lerMatriz("input/" + nomeFicheiro, false);
+
+        if (!verificarSeEstavel(matrizE)) {
+            System.out.println("E não é estável, logo não pode ser elemento neutro.");
+            return;
+        }
+
+        if (!burningDhar(matrizE)) {
+            System.out.println("E não é recorrente, logo não pertence a R.");
+            return;
+        }
+
+        boolean eNeutro = verificarElementoNeutro(matrizE);
+
+        if (eNeutro) {
+            System.out.println("A matriz E é elemento neutro da operação + em R.");
+        } else {
+            System.out.println("A matriz E não é elemento neutro da operação ⊕ em R.");
+        }
+
+    }
+
+    private static int contarRecorrentesRec(int[][] atual, int pos) {
+        int n = atual.length;
+
+        if (pos == n * n) {
+            if (burningDhar(atual)) {
+                return 1;
+            } else {
+                return 0;
+            }
+        }
+
+        int i = pos / n;
+        int j = pos % n;
+
+        int total = 0;
+
+        for (int v = 0; v < 4; v++) {
+            atual[i][j] = v;
+            total += contarRecorrentesRec(atual, pos + 1);
+        }
+
+        return total;
+    }
+
+
+    public static int contarConfiguracoesRecorrentes(int ordem) {
+        int[][] atual = new int[ordem][ordem];
+        return contarRecorrentesRec(atual, 0);
+    }
+
+
+    public static void sextoExercicio(Scanner scanner) {
+        System.out.print("Ordem da matriz: ");
+        int ordem = Integer.parseInt(scanner.nextLine());
+
+        int total = contarConfiguracoesRecorrentes(ordem);
+
+        System.out.println("Número de configurações recorrentes: " + total);
+    }
+
+    public static void setimoExercicio(Scanner scanner) {
+        System.out.print("Ordem da matriz: ");
+        int ordem = Integer.parseInt(scanner.nextLine());
+
+        int[][] laplaciana = laplacianaReduzida(ordem);
+        int determinanteLaplaciana = (int) Math.round(determinanteLaplaciana(laplaciana));
+
+        System.out.println("Numero configurações recorrentes: " + determinanteLaplaciana);
+    }
+
+    public static void oitavoExercicio(Scanner scanner) throws FileNotFoundException {
+
+        System.out.print("Nome do ficheiro da matriz A: ");
+        String nomeA = scanner.nextLine();
+
+        System.out.print("Nome do ficheiro da matriz E: ");
+        String nomeE = scanner.nextLine();
+
+        int[][] A = lerMatriz("input/" + nomeA, false);
+        int[][] E = lerMatriz("input/" + nomeE, false);
+
+        if (!burningDhar(A) || !burningDhar(E)) {
+            System.out.println("A ou E não são recorrentes.");
+            return;
+        }
+    }
+
+
+    public static void imprimirMenu() throws FileNotFoundException {
+        Scanner scanner = new Scanner(System.in);
+
+        System.out.println();
+
+        int escolha = -1;
+
+        while (escolha != 0) {
+            for (int i=0; i<45; i++) System.out.print("-");
+            System.out.println();
+            System.out.println("[1] Imprimir Matriz do Ficheiro");
+            System.out.println("[2] Verificar se a matriz é estável");
+            System.out.println("[3] Adicionar tarefas á configuração atual");
+            System.out.println("[4] Verificar se a matriz é recorrente");
+            System.out.println("[5] Verificar elemento neutro");
+            System.out.println("[6] Calcular número de configurações recorrentes sem Laplaciana");
+            System.out.println("[7] Calcular número de configurações recorrentes com Laplaciana");
+            System.out.println();
+            System.out.println("[0] Sair");
+
+            System.out.print("--> ");
+            escolha = Integer.parseInt(scanner.nextLine());
+            System.out.println();
+
+            switch (escolha) {
+                case 1:
+                    primeiroExercicio(scanner);
+                    System.out.println();
+                    break;
+                case 2:
+                    segundoExercicio(scanner);
+                    System.out.println();
+                    break;
+                case 3:
+                    terceiroExercicio(scanner);
+                    System.out.println();
+                    break;
+                case 4:
+                    quartoExercicio(scanner);
+                    System.out.println();
+                    break;
+                case 5:
+                    quintoExercicio(scanner);
+                    System.out.println();
+                case 6:
+                    sextoExercicio(scanner);
+                    System.out.println();
+                    break;
+                case 7:
+                    setimoExercicio(scanner);
+                    System.out.println();
+                    break;
+                case 0:
+                    System.exit(0);
+                    break;
+                default:
+                    System.exit(0);
+                    break;
+            }
         }
     }
 
 
 
     public static void main(String[] args) throws FileNotFoundException {
+        for (int i=0;i < args.length; i++) {
+            System.out.println(args[i] + "\n");
+        }
 
-        int[][] A = lerMatriz("input/matrizA");
-        int[][] B = lerMatriz("input/matrizB");
+        imprimirMenu();
+
+        int[][] A = lerMatriz("input/matrizA", true);
+        int[][] B = lerMatriz("input/matrizB", false);
 
         if (A.length != B.length) {
             System.out.println("matrizes têm ordens diferentes.");
@@ -373,15 +680,10 @@ public class Main {
         System.out.println("Matriz A:");
         imprimir(A);
 
-        System.out.println("Matriz B:");
-        imprimir(B);
 
-        int[][] soma = somarMatrizes(A, B);
-
-        System.out.println("Soma:");
-        imprimir(soma);
         System.out.println();
-        int[][] matrizEstabilizada = estabilizar(soma);
+        int[][] soma = somarMatrizes(A, B);
+        int[][] matrizEstabilizada = continuacaoEx3(soma);
 
         System.out.println("Estabilizada:");
         imprimir(matrizEstabilizada);
