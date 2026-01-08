@@ -12,8 +12,9 @@ import org.apache.commons.math4.legacy.linear.RealVector;
 
 public class Main {
 
-    private static int TOTAL_MATRIZES = 0;
+    static int TOTAL_MATRIZES = 0;
     static final int VALOR_CRITICO = 4;
+    static boolean MODO_INTERATIVO = false;
     static final File MATRIZ_FINAL_OUTPUT = new File("output/matrizFinal.txt");
 
 
@@ -80,7 +81,7 @@ public class Main {
             if (colunas == -1) {
                 colunas = partes.length;
             } else if (colunas != partes.length) {
-                System.out.println("Erro: linhas com número diferente de colunas no ficheiro " + filename);
+                if (MODO_INTERATIVO) System.out.println("Erro: linhas com número diferente de colunas no ficheiro " + filename);
                 System.exit(2);
             }
 
@@ -88,7 +89,7 @@ public class Main {
         }
 
         if (linhas != colunas) {
-            System.out.println("Erro: matriz não é quadrada no ficheiro " + filename);
+            if (MODO_INTERATIVO) System.out.println("Erro: matriz não é quadrada no ficheiro " + filename);
             System.exit(2);
         }
 
@@ -109,14 +110,14 @@ public class Main {
                     int valor = Integer.parseInt(partes[j].trim());
 
                     if (verificarEstavel && valor < 3) {
-                        System.out.println("Matriz não é estável! | Ficheiro: " + filename);
+                        if (MODO_INTERATIVO) System.out.println("Matriz não é estável! | Ficheiro: " + filename);
                         System.exit(2);
                     }
 
                     matriz[i][j] = valor;
 
                 } catch (NumberFormatException e) {
-                    System.out.println(
+                    if (MODO_INTERATIVO) System.out.println(
                             "Erro: valor não numérico na linha " + (i + 1) +
                                     ", coluna " + (j + 1) +
                                     " | Ficheiro: " + filename
@@ -206,9 +207,9 @@ public class Main {
         String outputPath = "output/output_image_" + indice + ".jpg";
         try {
             imageWriter.writeArrayAsImage(matriz, outputPath);
-            System.out.println("Imagem escrita: " + outputPath);
+            if (MODO_INTERATIVO) System.out.println("Imagem escrita: " + outputPath);
         } catch (Exception e) {
-            System.err.println("Erro ao escrever imagem: " + e.getMessage());
+            System.out.println("Erro ao escrever imagem: " + e.getMessage());
         }
     }
 
@@ -277,14 +278,14 @@ public class Main {
             }
         }
 
-        System.out.println("Percorremos a matriz " + contadorMatrizes + " vezes para a estabilizar!");
+        if (MODO_INTERATIVO) System.out.println("Percorremos a matriz " + contadorMatrizes + " vezes para a estabilizar!");
 
         if (contadorMatrizes <= 20) {
 
             for (int i = 0; i < contadorMatrizes; i++) {
                 escreverImagem(historico[i], i, imageWriter);
             }
-            System.out.println();
+            if (MODO_INTERATIVO) System.out.println();
 
         } else {
 
@@ -311,28 +312,28 @@ public class Main {
         for (int i = 0; i < matriz.length; i++) {
             for (int j = 0; j < matriz[i].length; j++) {
                 if (j == matriz.length - 1) {
-                    System.out.print(matriz[i][j]);
+                    if (MODO_INTERATIVO) System.out.print(matriz[i][j]);
                 } else {
-                    System.out.print(matriz[i][j] + ",");
+                    if (MODO_INTERATIVO) System.out.print(matriz[i][j] + ",");
                 }
             }
-            System.out.println();
+            if (MODO_INTERATIVO) System.out.println();
         }
-        System.out.println();
+        if (MODO_INTERATIVO) System.out.println();
     }
 
     public static void imprimirMatrizDouble(double[][] matriz) {
         for (int i = 0; i < matriz.length; i++) {
             for (int j = 0; j < matriz[i].length; j++) {
                 if (j == matriz.length - 1) {
-                    System.out.print(matriz[i][j]);
+                    if (MODO_INTERATIVO) System.out.print(matriz[i][j]);
                 } else {
-                    System.out.print(matriz[i][j] + ",");
+                    if (MODO_INTERATIVO) System.out.print(matriz[i][j] + ",");
                 }
             }
-            System.out.println();
+            if (MODO_INTERATIVO) System.out.println();
         }
-        System.out.println();
+        if (MODO_INTERATIVO) System.out.println();
     }
 
     public static double determinanteLaplaciana(int[][] laplaciana) {
@@ -399,34 +400,34 @@ public class Main {
 
         int ordem = resultados[0].length;
 
-        System.out.println("valores próprios");
+        if (MODO_INTERATIVO) System.out.println("valores próprios");
 
-        System.out.print("[ ");
+        if (MODO_INTERATIVO) System.out.print("[ ");
         for (int i = 0; i < ordem; i++) {
-            System.out.print(resultados[0][i]);
+            if (MODO_INTERATIVO) System.out.print(resultados[0][i]);
             if (i < ordem - 1) {
-                System.out.print(", ");
+                if (MODO_INTERATIVO) System.out.print(", ");
             }
         }
-        System.out.println("]");
+        if (MODO_INTERATIVO) System.out.println("]");
 
-        System.out.println("vetores proprios");
+        if (MODO_INTERATIVO) System.out.println("vetores proprios");
 
 
         for (int i = 1; i <= ordem; i++) {
-            System.out.print("[ ");
+            if (MODO_INTERATIVO) System.out.print("[ ");
             for (int j = 0; j < ordem; j++) {
-                System.out.print(resultados[i][j]);
+                if (MODO_INTERATIVO) System.out.print(resultados[i][j]);
                 if (j < ordem - 1) {
-                    System.out.print(", ");
+                    if (MODO_INTERATIVO) System.out.print(", ");
                 }
             }
-            System.out.println("]");
+            if (MODO_INTERATIVO) System.out.println("]");
         }
     }
 
     public static void primeiroExercicio(Scanner scanner) throws FileNotFoundException {
-        System.out.print("Nome do ficheiro: ");
+        if (MODO_INTERATIVO) System.out.print("Nome do ficheiro: ");
         String nomeFicheiro = scanner.nextLine();
         int[][] matriz = lerMatriz("input/" + nomeFicheiro, false);
         imprimirMatriz(matriz);
@@ -434,20 +435,20 @@ public class Main {
     }
 
     public static void segundoExercicio(Scanner scanner) throws FileNotFoundException {
-        System.out.print("Nome do ficheiro: ");
+        if (MODO_INTERATIVO) System.out.print("Nome do ficheiro: ");
         String nomeFicheiro = scanner.nextLine();
         int[][] matriz = lerMatriz("input/" + nomeFicheiro, false);
 
-        System.out.println("Matriz Carregada: ");
+        if (MODO_INTERATIVO) System.out.println("Matriz Carregada: ");
         imprimirMatriz(matriz);
 
         if (verificarSeEstavel(matriz)) {
-            System.out.println("A matriz é estável");
+            if (MODO_INTERATIVO) System.out.println("A matriz é estável");
         } else {
-            System.out.println("A matriz não é estável");
+            if (MODO_INTERATIVO) System.out.println("A matriz não é estável");
             estabilizarParticular(matriz);
 
-            System.out.println("Matriz estabilizada: ");
+            if (MODO_INTERATIVO) System.out.println("Matriz estabilizada: ");
             imprimirMatriz(matriz);
             escreverFicheiro(matriz);
         }
@@ -455,37 +456,37 @@ public class Main {
 
     public static void terceiroExercicio(Scanner scanner) throws FileNotFoundException {
 
-        System.out.print("Nome do ficheiro da configuração atual: ");
+        if (MODO_INTERATIVO) System.out.print("Nome do ficheiro da configuração atual: ");
         String nomeFicheiro = scanner.nextLine();
         int[][] matrizA = lerMatriz("input/" + nomeFicheiro, false);
 
         if (verificarSeEstavel(matrizA)) {
-            System.out.print("Nome do ficheiro das novas tarefas: ");
+            if (MODO_INTERATIVO) System.out.print("Nome do ficheiro das novas tarefas: ");
             nomeFicheiro = scanner.nextLine();
-            System.out.println();
+            if (MODO_INTERATIVO) System.out.println();
             int[][] matrizB = lerMatriz("input/" + nomeFicheiro, false);
 
             int[][] somaMatrizes = somarMatrizes(matrizA, matrizB);
             continuacaoEx3(somaMatrizes);
 
         } else {
-            System.out.println("A Configuração Atual não é estavel!");
+            if (MODO_INTERATIVO) System.out.println("A Configuração Atual não é estavel!");
         }
     }
 
     public static void quartoExercicio(Scanner scanner) throws FileNotFoundException {
-        System.out.print("Nome do ficheiro: ");
+        if (MODO_INTERATIVO) System.out.print("Nome do ficheiro: ");
         String nomeFicheiro = scanner.nextLine();
         int[][] matriz = lerMatriz("input/" + nomeFicheiro, false);
 
         if (verificarSeEstavel(matriz)) {
             if (burningDhar(matriz)) {
-                System.out.println("A matriz é recorrente");
+                if (MODO_INTERATIVO) System.out.println("A matriz é recorrente");
             } else {
-                System.out.println("A matriz não é recorrente");
+                if (MODO_INTERATIVO) System.out.println("A matriz não é recorrente");
             }
         } else {
-            System.out.println("A matriz não é estável logo nao posso aplicar o algoritmo burning de dhar");
+            if (MODO_INTERATIVO) System.out.println("A matriz não é estável logo nao posso aplicar o algoritmo burning de dhar");
         }
     }
 
@@ -544,32 +545,32 @@ public class Main {
 
         boolean resultado = gerarEVerificar(atual, 0, matrizE);
 
-        if (imprimirTentativas) System.out.println("Matrizes geradas e testadas: " + TOTAL_MATRIZES);
+        if (imprimirTentativas) if (MODO_INTERATIVO) System.out.println("Matrizes geradas e testadas: " + TOTAL_MATRIZES);
 
         return resultado;
     }
 
     public static void quintoExercicio(Scanner scanner) throws FileNotFoundException {
-        System.out.print("Nome do ficheiro que contem a matriz E: ");
+        if (MODO_INTERATIVO) System.out.print("Nome do ficheiro que contem a matriz E: ");
         String nomeFicheiro = scanner.nextLine();
         int[][] matrizE = lerMatriz("input/" + nomeFicheiro, false);
 
         if (!verificarSeEstavel(matrizE)) {
-            System.out.println("E não é estável, logo não pode ser elemento neutro.");
+            if (MODO_INTERATIVO) System.out.println("E não é estável, logo não pode ser elemento neutro.");
             return;
         }
 
         if (!burningDhar(matrizE)) {
-            System.out.println("E não é recorrente, logo não pertence a R");
+            if (MODO_INTERATIVO) System.out.println("E não é recorrente, logo não pertence a R");
             return;
         }
 
         boolean eNeutro = verificarElementoNeutro(matrizE, true);
 
         if (eNeutro) {
-            System.out.println("A matriz E é elemento neutro da operação + em r");
+            if (MODO_INTERATIVO) System.out.println("A matriz E é elemento neutro da operação + em r");
         } else {
-            System.out.println("A matriz E não é elemento neutro da operação ⊕ em R");
+            if (MODO_INTERATIVO) System.out.println("A matriz E não é elemento neutro da operação ⊕ em R");
         }
 
     }
@@ -606,26 +607,26 @@ public class Main {
 
 
     public static void sextoExercicio(Scanner scanner) {
-        System.out.print("Ordem da matriz: ");
+        if (MODO_INTERATIVO) System.out.print("Ordem da matriz: ");
         int ordem = Integer.parseInt(scanner.nextLine());
         long inicio = System.nanoTime();
         int total = contarConfiguracoesRecorrentes(ordem);
         long fim = System.nanoTime();
         double tempoMs = (fim - inicio) / 1000000.0;
-        System.out.println("Número de configurações recorrentes: " + total);
-        System.out.printf("(6) Tempo de execução: %.3f ms%n", tempoMs);
+        if (MODO_INTERATIVO) System.out.println("Número de configurações recorrentes: " + total);
+        if (MODO_INTERATIVO) System.out.printf("(6) Tempo de execução: %.3f ms%n", tempoMs);
     }
 
     public static void setimoExercicio(Scanner scanner) {
-        System.out.print("Ordem da matriz: ");
+        if (MODO_INTERATIVO) System.out.print("Ordem da matriz: ");
         int ordem = Integer.parseInt(scanner.nextLine());
         long inicio = System.nanoTime();
         int[][] laplaciana = laplacianaReduzida(ordem);
         int determinanteLaplaciana = (int) Math.round(determinanteLaplaciana(laplaciana));
         long fim = System.nanoTime();
         double tempoMs = (fim - inicio) / 1000000.0;
-        System.out.println("Numero configurações recorrentes: " + determinanteLaplaciana);
-        System.out.printf("(7) Tempo de execução: %.3f ms%n", tempoMs);
+        if (MODO_INTERATIVO) System.out.println("Numero configurações recorrentes: " + determinanteLaplaciana);
+        if (MODO_INTERATIVO) System.out.printf("(7) Tempo de execução: %.3f ms%n", tempoMs);
     }
 
 
@@ -676,10 +677,10 @@ public class Main {
         boolean encontrada = gerarETestar(matrizTentativa, 0, matrizA, matrizE, resultado);
 
         if (!encontrada) {
-            System.out.println("Não foi encontrada nenhuma matriz B.");
+            if (MODO_INTERATIVO) System.out.println("Não foi encontrada nenhuma matriz B.");
             return null;
         } else {
-            System.out.println("Foi encontrada inversa em " + TOTAL_MATRIZES + " tentativas!");
+            if (MODO_INTERATIVO) System.out.println("Foi encontrada inversa em " + TOTAL_MATRIZES + " tentativas!");
         }
 
         return resultado;
@@ -687,44 +688,44 @@ public class Main {
 
     public static void oitavoExercicio(Scanner scanner) throws FileNotFoundException {
 
-        System.out.print("Nome do ficheiro da matriz A: ");
+        if (MODO_INTERATIVO) System.out.print("Nome do ficheiro da matriz A: ");
         String nomeA = scanner.nextLine();
 
-        System.out.print("Nome do ficheiro da matriz E: ");
+        if (MODO_INTERATIVO) System.out.print("Nome do ficheiro da matriz E: ");
         String nomeE = scanner.nextLine();
 
         int[][] matrizA = lerMatriz("input/" + nomeA, false);
         int[][] matrizE = lerMatriz("input/" + nomeE, false);
 
-        System.out.println();
+        if (MODO_INTERATIVO) System.out.println();
 
         if (!verificarSeEstavel(matrizA)) {
-            System.out.println("A não é estável, logo não pertence a R");
+            if (MODO_INTERATIVO) System.out.println("A não é estável, logo não pertence a R");
             return;
         }
 
         if (!burningDhar(matrizA)) {
-            System.out.println("A não é recorrente, logo não tem inversa em R");
+            if (MODO_INTERATIVO) System.out.println("A não é recorrente, logo não tem inversa em R");
             return;
         }
 
         if (matrizA.length != matrizE.length) {
-            System.out.println("As matrizes nao têm a mesma ordem");
+            if (MODO_INTERATIVO) System.out.println("As matrizes nao têm a mesma ordem");
             return;
         }
 
         if (!verificarSeEstavel(matrizE)) {
-            System.out.println("E não é estável, logo não pode ser elemento neutro.");
+            if (MODO_INTERATIVO) System.out.println("E não é estável, logo não pode ser elemento neutro.");
             return;
         }
 
         if (!burningDhar(matrizE)) {
-            System.out.println("E não é recorrente, logo não pertence a R");
+            if (MODO_INTERATIVO) System.out.println("E não é recorrente, logo não pertence a R");
             return;
         }
 
         if (!verificarElementoNeutro(matrizE, false)) {
-            System.out.println("A matriz E não é elemento neutro da operação ⊕ em R");
+            if (MODO_INTERATIVO) System.out.println("A matriz E não é elemento neutro da operação ⊕ em R");
             return;
         }
 
@@ -732,7 +733,7 @@ public class Main {
 
         int[][] inversa = encontrarInversa(matrizA, matrizE);
         if (inversa != null) {
-            System.out.println("Matriz inversa de A relativamente á adicao estabilizada:");
+            if (MODO_INTERATIVO) System.out.println("Matriz inversa de A relativamente á adicao estabilizada:");
             imprimirMatriz(inversa);
         }
     }
@@ -764,7 +765,7 @@ public class Main {
 
                 double valorProprio = 4 - 2 * Math.cos(k * Math.PI / (ordem + 1)) - 2 * Math.cos(l * Math.PI / (ordem + 1));
 
-                System.out.println(valorProprio);
+                if (MODO_INTERATIVO) System.out.println(valorProprio);
 
                 double[][] vetorProprio = new double[ordem][ordem];
 
@@ -782,17 +783,17 @@ public class Main {
 
 
     public static void nonoExercicio(Scanner scanner) {
-        System.out.print("Ordem da matriz: ");
+        if (MODO_INTERATIVO) System.out.print("Ordem da matriz: ");
         int ordem = Integer.parseInt(scanner.nextLine());
         long inicio = System.nanoTime();
         formulaFechada(ordem);
         long fim = System.nanoTime();
         double tempoMs = (fim - inicio) / 1000000.0;
-        System.out.printf("(9) Tempo de execução: %.3f ms%n", tempoMs);
+        if (MODO_INTERATIVO) System.out.printf("(9) Tempo de execução: %.3f ms%n", tempoMs);
     }
 
     public static void decimoExercicio(Scanner scanner) {
-        System.out.print("Ordem da matriz: ");
+        if (MODO_INTERATIVO) System.out.print("Ordem da matriz: ");
         int ordem = Integer.parseInt(scanner.nextLine());
 
         long inicio = System.nanoTime();
@@ -801,82 +802,82 @@ public class Main {
         imprimirEspectro(matrizResultados);
         long fim = System.nanoTime();
         double tempoMs = (fim - inicio) / 1000000.0;
-        System.out.printf("(10) Tempo de execução: %.3f ms%n", tempoMs);
+        if (MODO_INTERATIVO) System.out.printf("(10) Tempo de execução: %.3f ms%n", tempoMs);
     }
 
 
     public static void imprimirMenu() throws FileNotFoundException {
         Scanner scanner = new Scanner(System.in);
 
-        System.out.println();
+        if (MODO_INTERATIVO) System.out.println();
 
         int escolha = -1;
 
         while (escolha != 0) {
-            for (int i=0; i<70; i++) System.out.print("-");
-            System.out.println();
-            System.out.println("[1] Imprimir Matriz do Ficheiro");
-            System.out.println("[2] Verificar se a matriz é estável");
-            System.out.println("[3] Adicionar tarefas á configuração atual");
-            System.out.println("[4] Verificar se a matriz é recorrente");
-            System.out.println("[5] Verificar elemento neutro");
-            System.out.println("[6] Calcular número de configurações recorrentes sem Laplaciana");
-            System.out.println("[7] Calcular número de configurações recorrentes com Laplaciana");
-            System.out.println("[8] Calcular a matriz inversa relativamente à adição estabilizada");
-            System.out.println("[9] Calcular valores e vetores próprios com a formula fechada");
-            System.out.println("[10] Calcular valores e vetores próprios sem a formula fechada");
-            System.out.println();
-            System.out.println("[0] Sair");
+            for (int i=0; i<70; i++) if (MODO_INTERATIVO) System.out.print("-");
+            if (MODO_INTERATIVO) System.out.println();
+            if (MODO_INTERATIVO) System.out.println("[1] Imprimir Matriz do Ficheiro");
+            if (MODO_INTERATIVO) System.out.println("[2] Verificar se a matriz é estável");
+            if (MODO_INTERATIVO) System.out.println("[3] Adicionar tarefas á configuração atual");
+            if (MODO_INTERATIVO) System.out.println("[4] Verificar se a matriz é recorrente");
+            if (MODO_INTERATIVO) System.out.println("[5] Verificar elemento neutro");
+            if (MODO_INTERATIVO) System.out.println("[6] Calcular número de configurações recorrentes sem Laplaciana");
+            if (MODO_INTERATIVO) System.out.println("[7] Calcular número de configurações recorrentes com Laplaciana");
+            if (MODO_INTERATIVO) System.out.println("[8] Calcular a matriz inversa relativamente à adição estabilizada");
+            if (MODO_INTERATIVO) System.out.println("[9] Calcular valores e vetores próprios com a formula fechada");
+            if (MODO_INTERATIVO) System.out.println("[10] Calcular valores e vetores próprios sem a formula fechada");
+            if (MODO_INTERATIVO) System.out.println();
+            if (MODO_INTERATIVO) System.out.println("[0] Sair");
 
-            System.out.print("--> ");
+            if (MODO_INTERATIVO) System.out.print("--> ");
             escolha = Integer.parseInt(scanner.nextLine());
-            System.out.println();
+            if (MODO_INTERATIVO) System.out.println();
 
             switch (escolha) {
                 case 1:
                     primeiroExercicio(scanner);
-                    System.out.println();
+                    if (MODO_INTERATIVO) System.out.println();
                     break;
                 case 2:
                     segundoExercicio(scanner);
-                    System.out.println();
+                    if (MODO_INTERATIVO) System.out.println();
                     break;
                 case 3:
                     terceiroExercicio(scanner);
-                    System.out.println();
+                    if (MODO_INTERATIVO) System.out.println();
                     break;
                 case 4:
                     quartoExercicio(scanner);
-                    System.out.println();
+                    if (MODO_INTERATIVO) System.out.println();
                     break;
                 case 5:
                     quintoExercicio(scanner);
-                    System.out.println();
+                    if (MODO_INTERATIVO) System.out.println();
                 case 6:
                     sextoExercicio(scanner);
-                    System.out.println();
+                    if (MODO_INTERATIVO) System.out.println();
                     break;
                 case 7:
                     setimoExercicio(scanner);
-                    System.out.println();
+                    if (MODO_INTERATIVO) System.out.println();
                     break;
                 case 8:
                     oitavoExercicio(scanner);
-                    System.out.println();
+                    if (MODO_INTERATIVO) System.out.println();
                     break;
                 case 9:
                     nonoExercicio(scanner);
-                    System.out.println();
+                    if (MODO_INTERATIVO) System.out.println();
                     break;
                 case 10:
                     decimoExercicio(scanner);
-                    System.out.println();
+                    if (MODO_INTERATIVO) System.out.println();
                     break;
                 case 0:
                     System.exit(0);
                     break;
                 default:
-                    System.out.println("Opção Inválida!");
+                    if (MODO_INTERATIVO) System.out.println("Opção Inválida!");
                     System.exit(1);
                     break;
             }
@@ -884,6 +885,9 @@ public class Main {
     }
 
     public static void main(String[] args) throws FileNotFoundException {
-        imprimirMenu();
+        if (args.length == 0) {
+            MODO_INTERATIVO = true;
+            imprimirMenu();
+        }
     }
 }
