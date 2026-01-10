@@ -2,20 +2,15 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Scanner;
 import java.io.PrintWriter;
-import org.apache.commons.math4.legacy.linear.LUDecomposition;
-import org.apache.commons.math4.legacy.linear.EigenDecomposition;
-import org.apache.commons.math4.legacy.linear.MatrixUtils;
-import org.apache.commons.math4.legacy.linear.RealMatrix;
-import org.apache.commons.math4.legacy.linear.RealVector;
 
-
+import org.apache.commons.math4.legacy.linear.*;
 
 public class Main {
 
     static int TOTAL_MATRIZES = 0;
     static final int VALOR_CRITICO = 4;
     static boolean MODO_INTERATIVO = false;
-    static final File MATRIZ_FINAL_OUTPUT = new File("output/matrizFinal.txt");
+    static PrintWriter OUT_WRITER = null;
 
 
     public static int[][] laplacianaReduzida(int ordem) {
@@ -82,6 +77,7 @@ public class Main {
                 colunas = partes.length;
             } else if (colunas != partes.length) {
                 if (MODO_INTERATIVO) System.out.println("Erro: linhas com número diferente de colunas no ficheiro " + filename);
+                if (!MODO_INTERATIVO) OUT_WRITER.println("Erro: linhas com número diferente de colunas no ficheiro " + filename);
                 System.exit(2);
             }
 
@@ -90,6 +86,7 @@ public class Main {
 
         if (linhas != colunas) {
             if (MODO_INTERATIVO) System.out.println("Erro: matriz não é quadrada no ficheiro " + filename);
+            if (!MODO_INTERATIVO) OUT_WRITER.println("Erro: matriz não é quadrada no ficheiro " + filename);
             System.exit(2);
         }
 
@@ -111,6 +108,7 @@ public class Main {
 
                     if (verificarEstavel && valor < 3) {
                         if (MODO_INTERATIVO) System.out.println("Matriz não é estável! | Ficheiro: " + filename);
+                        if (!MODO_INTERATIVO) OUT_WRITER.println("Matriz não é estável! | Ficheiro: " + filename);
                         System.exit(2);
                     }
 
@@ -122,20 +120,26 @@ public class Main {
                                     ", coluna " + (j + 1) +
                                     " | Ficheiro: " + filename
                     );
+                    if (!MODO_INTERATIVO) OUT_WRITER.println(
+                            "Erro: valor não numérico na linha " + (i + 1) +
+                                    ", coluna " + (j + 1) +
+                                    " | Ficheiro: " + filename
+                    );
                     System.exit(3);
                 }
             }
             i++;
         }
 
-        scanner.close();
         return matriz;
     }
 
 
     public static void escreverFicheiro(int[][] matriz) throws FileNotFoundException {
 
-        PrintWriter writer = new PrintWriter(MATRIZ_FINAL_OUTPUT);
+        Scanner scanner = new Scanner(System.in);
+        File outFile = new File(scanner.nextLine());
+        PrintWriter writer = new PrintWriter(outFile);
 
         for (int i = 0; i < matriz.length; i++) {
             for (int j = 0; j < matriz[i].length; j++) {
@@ -208,8 +212,10 @@ public class Main {
         try {
             imageWriter.writeArrayAsImage(matriz, outputPath);
             if (MODO_INTERATIVO) System.out.println("Imagem escrita: " + outputPath);
+            if (!MODO_INTERATIVO) OUT_WRITER.println("Imagem escrita: " + outputPath);
         } catch (Exception e) {
-            System.out.println("Erro ao escrever imagem: " + e.getMessage());
+            if (MODO_INTERATIVO) System.out.println("Erro ao escrever imagem: " + e.getMessage());
+            if (!MODO_INTERATIVO) OUT_WRITER.println("Erro ao escrever imagem: " + e.getMessage());
         }
     }
 
@@ -279,13 +285,14 @@ public class Main {
         }
 
         if (MODO_INTERATIVO) System.out.println("Percorremos a matriz " + contadorMatrizes + " vezes para a estabilizar!");
-
+        if (!MODO_INTERATIVO) OUT_WRITER.println("Percorremos a matriz " + contadorMatrizes + " vezes para a estabilizar!");
         if (contadorMatrizes <= 20) {
 
             for (int i = 0; i < contadorMatrizes; i++) {
                 escreverImagem(historico[i], i, imageWriter);
             }
             if (MODO_INTERATIVO) System.out.println();
+            if (!MODO_INTERATIVO) OUT_WRITER.println();
 
         } else {
 
@@ -322,19 +329,29 @@ public class Main {
         if (MODO_INTERATIVO) System.out.println();
     }
 
-    public static void imprimirMatrizDouble(double[][] matriz) {
+    public static void imprimirVetorProprio(double[][] matriz) {
+        String bob = "[";
+        boolean first = true;
+
         for (int i = 0; i < matriz.length; i++) {
             for (int j = 0; j < matriz[i].length; j++) {
-                if (j == matriz.length - 1) {
-                    if (MODO_INTERATIVO) System.out.print(matriz[i][j]);
-                } else {
-                    if (MODO_INTERATIVO) System.out.print(matriz[i][j] + ",");
+
+                if (!first) {
+                    bob += ",";
                 }
+
+                bob += matriz[i][j];
+                first = false;
             }
-            if (MODO_INTERATIVO) System.out.println();
         }
-        if (MODO_INTERATIVO) System.out.println();
+
+        bob += "]";
+
+        if (MODO_INTERATIVO) System.out.println(bob);
+        if (!MODO_INTERATIVO) OUT_WRITER.println(bob);
     }
+
+
 
     public static double determinanteLaplaciana(int[][] laplaciana) {
 
@@ -400,31 +417,46 @@ public class Main {
 
         int ordem = resultados[0].length;
 
-        if (MODO_INTERATIVO) System.out.println("valores próprios");
+        String valores = "[";
 
-        if (MODO_INTERATIVO) System.out.print("[ ");
         for (int i = 0; i < ordem; i++) {
-            if (MODO_INTERATIVO) System.out.print(resultados[0][i]);
-            if (i < ordem - 1) {
-                if (MODO_INTERATIVO) System.out.print(", ");
+            if (i == ordem - 1) {
+                valores += resultados[0][i];
+            } else {
+                valores += resultados[0][i] + ",";
             }
         }
-        if (MODO_INTERATIVO) System.out.println("]");
 
-        if (MODO_INTERATIVO) System.out.println("vetores proprios");
+        valores += "]";
+
+        if (MODO_INTERATIVO) System.out.println("Valores Próprios:");
+        if (MODO_INTERATIVO) System.out.println(valores);
+        if (!MODO_INTERATIVO) OUT_WRITER.println("Valores Próprios:");
+        if (!MODO_INTERATIVO) OUT_WRITER.println(valores);
+
+        if (MODO_INTERATIVO) System.out.println("Vetores Próprios:");
+        if (!MODO_INTERATIVO) OUT_WRITER.println("Vetores Próprios:");
 
 
         for (int i = 1; i <= ordem; i++) {
-            if (MODO_INTERATIVO) System.out.print("[ ");
+            String vetor = "[";
+
             for (int j = 0; j < ordem; j++) {
-                if (MODO_INTERATIVO) System.out.print(resultados[i][j]);
-                if (j < ordem - 1) {
-                    if (MODO_INTERATIVO) System.out.print(", ");
+                if (j == ordem - 1) {
+                    vetor += resultados[i][j];
+                } else {
+                    vetor += resultados[i][j] + ",";
                 }
             }
-            if (MODO_INTERATIVO) System.out.println("]");
+
+            vetor += "]";
+
+            if (MODO_INTERATIVO) System.out.println(vetor);
+            if (!MODO_INTERATIVO) OUT_WRITER.println(vetor);
         }
     }
+
+
 
     public static void primeiroExercicio(Scanner scanner) throws FileNotFoundException {
         if (MODO_INTERATIVO) System.out.print("Nome do ficheiro: ");
@@ -471,6 +503,7 @@ public class Main {
 
         } else {
             if (MODO_INTERATIVO) System.out.println("A Configuração Atual não é estavel!");
+            if (!MODO_INTERATIVO) OUT_WRITER.println("A Configuração Atual não é estavél!");
         }
     }
 
@@ -546,6 +579,7 @@ public class Main {
         boolean resultado = gerarEVerificar(atual, 0, matrizE);
 
         if (imprimirTentativas) if (MODO_INTERATIVO) System.out.println("Matrizes geradas e testadas: " + TOTAL_MATRIZES);
+        if (imprimirTentativas) if (!MODO_INTERATIVO) OUT_WRITER.println("Matrizes geradas e testadas: " + TOTAL_MATRIZES);
 
         return resultado;
     }
@@ -572,7 +606,6 @@ public class Main {
         } else {
             if (MODO_INTERATIVO) System.out.println("A matriz E não é elemento neutro da operação ⊕ em R");
         }
-
     }
 
     private static int contarRecorrentesRec(int[][] atual, int pos) {
@@ -677,10 +710,12 @@ public class Main {
         boolean encontrada = gerarETestar(matrizTentativa, 0, matrizA, matrizE, resultado);
 
         if (!encontrada) {
-            if (MODO_INTERATIVO) System.out.println("Não foi encontrada nenhuma matriz B.");
+            if (MODO_INTERATIVO) System.out.println("Não foi encontrada nenhuma matriz inversa");
+            if (!MODO_INTERATIVO) OUT_WRITER.println("Não foi encontrada nenhuma matriz inversa");
             return null;
         } else {
             if (MODO_INTERATIVO) System.out.println("Foi encontrada inversa em " + TOTAL_MATRIZES + " tentativas!");
+            if (!MODO_INTERATIVO) OUT_WRITER.println("Foi encontrada inversa em " + TOTAL_MATRIZES + " tentativas!");
         }
 
         return resultado;
@@ -757,15 +792,38 @@ public class Main {
         }
     }
 
+    public static void imprimirValoresProprios(double[] arrValoresProprios) {
+        String bob = "[";
+        for (int i=0; i < arrValoresProprios.length; i++) {
+            if (i == arrValoresProprios.length - 1) {
+                bob += (arrValoresProprios[i] + "]");
+            } else {
+                bob += (arrValoresProprios[i] + ",");
+            }
+        }
+        if (MODO_INTERATIVO){
+            System.out.println("Valores Próprios: ");
+            System.out.println(bob);
+        }
+        if (!MODO_INTERATIVO) {
+            OUT_WRITER.print("Valores Próprios: ");
+            OUT_WRITER.println(bob);
+        }
+    }
+
 
     public static void formulaFechada(int ordem) {
+        double[] arrValoresProprios = new double[ordem * ordem];
 
+        if (MODO_INTERATIVO) System.out.println("Vetores Próprios: ");
+        if (!MODO_INTERATIVO) OUT_WRITER.println("Vetores Próprios: ");
         for (int k = 1; k <= ordem; k++) {
             for (int l = 1; l <= ordem; l++) {
 
                 double valorProprio = 4 - 2 * Math.cos(k * Math.PI / (ordem + 1)) - 2 * Math.cos(l * Math.PI / (ordem + 1));
-
-                if (MODO_INTERATIVO) System.out.println(valorProprio);
+                int indice = (k-1) * ordem + (l - 1);
+                valorProprio = Math.round(valorProprio * 1000.0) / 1000.0;
+                arrValoresProprios[indice] = valorProprio;
 
                 double[][] vetorProprio = new double[ordem][ordem];
 
@@ -776,23 +834,27 @@ public class Main {
                     }
                 }
                 normalizar(vetorProprio);
-                imprimirMatrizDouble(vetorProprio);
+
+                imprimirVetorProprio(vetorProprio);
             }
         }
+        if (MODO_INTERATIVO) System.out.println();
+        if (!MODO_INTERATIVO) OUT_WRITER.println();
+        imprimirValoresProprios(arrValoresProprios);
     }
 
 
-    public static void nonoExercicio(Scanner scanner) {
+    public static void decimoExercicio(Scanner scanner) {
         if (MODO_INTERATIVO) System.out.print("Ordem da matriz: ");
         int ordem = Integer.parseInt(scanner.nextLine());
         long inicio = System.nanoTime();
         formulaFechada(ordem);
         long fim = System.nanoTime();
         double tempoMs = (fim - inicio) / 1000000.0;
-        if (MODO_INTERATIVO) System.out.printf("(9) Tempo de execução: %.3f ms%n", tempoMs);
+        if (MODO_INTERATIVO) System.out.printf("(10) Tempo de execução: %.3f ms%n", tempoMs);
     }
 
-    public static void decimoExercicio(Scanner scanner) {
+    public static void nonoExercicio(Scanner scanner) {
         if (MODO_INTERATIVO) System.out.print("Ordem da matriz: ");
         int ordem = Integer.parseInt(scanner.nextLine());
 
@@ -802,7 +864,7 @@ public class Main {
         imprimirEspectro(matrizResultados);
         long fim = System.nanoTime();
         double tempoMs = (fim - inicio) / 1000000.0;
-        if (MODO_INTERATIVO) System.out.printf("(10) Tempo de execução: %.3f ms%n", tempoMs);
+        if (MODO_INTERATIVO) System.out.printf("(9) Tempo de execução: %.3f ms%n", tempoMs);
     }
 
 
@@ -824,8 +886,8 @@ public class Main {
             if (MODO_INTERATIVO) System.out.println("[6] Calcular número de configurações recorrentes sem Laplaciana");
             if (MODO_INTERATIVO) System.out.println("[7] Calcular número de configurações recorrentes com Laplaciana");
             if (MODO_INTERATIVO) System.out.println("[8] Calcular a matriz inversa relativamente à adição estabilizada");
-            if (MODO_INTERATIVO) System.out.println("[9] Calcular valores e vetores próprios com a formula fechada");
-            if (MODO_INTERATIVO) System.out.println("[10] Calcular valores e vetores próprios sem a formula fechada");
+            if (MODO_INTERATIVO) System.out.println("[9] Calcular valores e vetores próprios sem a formula fechada");
+            if (MODO_INTERATIVO) System.out.println("[10] Calcular valores e vetores próprios com a formula fechada");
             if (MODO_INTERATIVO) System.out.println();
             if (MODO_INTERATIVO) System.out.println("[0] Sair");
 
@@ -884,10 +946,319 @@ public class Main {
         }
     }
 
+    public static void imprimirMatrizNI (int[][] matriz) {
+        for (int i = 0; i < matriz.length; i++) {
+            for (int j = 0; j < matriz[i].length; j++) {
+                if (j == matriz.length - 1) {
+                    OUT_WRITER.print(matriz[i][j]);
+                } else {
+                    OUT_WRITER.print(matriz[i][j] + ",");
+                }
+            }
+            OUT_WRITER.println();
+        }
+        OUT_WRITER.println();
+    }
+
+    public static void primeiroExercicioNI(String nomeFicheiro) throws FileNotFoundException {
+        int [][] matriz = lerMatriz("input/" + nomeFicheiro, false);
+        imprimirMatrizNI(matriz);
+    }
+
+    public static void segundoExercicioNI(String nomeFicheiro) throws FileNotFoundException {
+        int[][] matriz = lerMatriz("input/" + nomeFicheiro, false);
+
+        OUT_WRITER.println("Matriz Carregada:");
+
+        imprimirMatrizNI(matriz);
+        if (verificarSeEstavel(matriz)) {
+            OUT_WRITER.println("A matriz é estável !");
+        } else {
+            OUT_WRITER.println("A matriz não é estável!");
+            estabilizarParticular(matriz);
+
+            OUT_WRITER.println("\nMatriz Estabilizada: ");
+            imprimirMatrizNI(matriz);
+        }
+    }
+
+    public static void terceiroExercicioNI(String nomeMatrizA, String nomeMatrizB) throws FileNotFoundException {
+
+        int[][] matrizA = lerMatriz("input/" + nomeMatrizA, false);
+
+        if (verificarSeEstavel(matrizA)) {
+            int[][] matrizB = lerMatriz("input/" + nomeMatrizB, false);
+
+            int[][] somaMatrizes = somarMatrizes(matrizA, matrizB);
+            continuacaoEx3(somaMatrizes);
+
+        } else {
+            OUT_WRITER.println("A Configuração Atual não é estavél!");
+        }
+    }
+
+    public static void quartoExercicioNI(String nomeFicheiro) throws FileNotFoundException {
+        int[][] matriz = lerMatriz("input/" + nomeFicheiro, false);
+
+        if (verificarSeEstavel(matriz)) {
+            if (burningDhar(matriz)) {
+                OUT_WRITER.println("A matriz é recorrente");
+            } else {
+                OUT_WRITER.println("A matriz não é recorrente");
+            }
+        } else {
+            OUT_WRITER.println("A matriz não é estável logo nao posso aplicar o algoritmo burning de dhar");
+        }
+    }
+
+    public static void quintoExercicioNI(String nomeFicheiro) throws FileNotFoundException {
+        int[][] matrizE = lerMatriz("input/" + nomeFicheiro, false);
+
+        if (!verificarSeEstavel(matrizE)) {
+            OUT_WRITER.println("E não é estável, logo não pode ser elemento neutro.");
+            return;
+        }
+
+        if (!burningDhar(matrizE)) {
+            OUT_WRITER.println("E não é recorrente, logo não pertence a R");
+            return;
+        }
+
+        boolean eNeutro = verificarElementoNeutro(matrizE, true);
+
+        if (eNeutro) {
+            OUT_WRITER.println("A matriz E é elemento neutro da operação + em r");
+        } else {
+            OUT_WRITER.println("A matriz E não é elemento neutro da operação ⊕ em R");
+        }
+    }
+
+    public static void sextoExercicioNI(int ordem) {
+        long inicio = System.nanoTime();
+        int total = contarConfiguracoesRecorrentes(ordem);
+        long fim = System.nanoTime();
+        double tempoMs = (fim - inicio) / 1000000.0;
+        OUT_WRITER.println("Número de configurações recorrentes: " + total);
+        OUT_WRITER.printf("(6) Tempo de execução: %.3f ms%n", tempoMs);
+    }
+
+    public static void setimoExercicioNI(int ordem) {
+        long inicio = System.nanoTime();
+        int[][] laplaciana = laplacianaReduzida(ordem);
+        int determinanteLaplaciana = (int) Math.round(determinanteLaplaciana(laplaciana));
+        long fim = System.nanoTime();
+        double tempoMs = (fim - inicio) / 1000000.0;
+        OUT_WRITER.println("Numero configurações recorrentes: " + determinanteLaplaciana);
+        OUT_WRITER.printf("(7) Tempo de execução: %.3f ms%n", tempoMs);
+    }
+
+    public static void oitavoExercicioNI(String nomeFicheiroA, String nomeFicheiroE) throws FileNotFoundException {
+
+        int[][] matrizA = lerMatriz("input/" + nomeFicheiroA, false);
+        int[][] matrizE = lerMatriz("input/" + nomeFicheiroE, false);
+
+        if (!verificarSeEstavel(matrizA)) {
+            OUT_WRITER.println("A não é estável, logo não pertence a R");
+            return;
+        }
+
+        if (!burningDhar(matrizA)) {
+            OUT_WRITER.println("A não é recorrente, logo não tem inversa em R");
+            return;
+        }
+
+        if (matrizA.length != matrizE.length) {
+            OUT_WRITER.println("As matrizes nao têm a mesma ordem");
+            return;
+        }
+
+        if (!verificarSeEstavel(matrizE)) {
+            OUT_WRITER.println("E não é estável, logo não pode ser elemento neutro.");
+            return;
+        }
+
+        if (!burningDhar(matrizE)) {
+            OUT_WRITER.println("E não é recorrente, logo não pertence a R");
+            return;
+        }
+
+        if (!verificarElementoNeutro(matrizE, false)) {
+            OUT_WRITER.println("A matriz E não é elemento neutro da operação ⊕ em R");
+            return;
+        }
+
+        TOTAL_MATRIZES = 0;
+
+        int[][] inversa = encontrarInversa(matrizA, matrizE);
+        if (inversa != null) {
+            OUT_WRITER.println("Matriz inversa de A relativamente á adicao estabilizada:");
+            imprimirMatrizNI(inversa);
+        }
+    }
+
+    public static void nonoExercicioNI(int ordem) {
+        long inicio = System.nanoTime();
+        int[][] laplaciana = laplacianaReduzida(ordem);
+        double[][] matrizResultados = espectroLaplaciana(laplaciana);
+        imprimirEspectro(matrizResultados);
+        long fim = System.nanoTime();
+        double tempoMs = (fim - inicio) / 1000000.0;
+        OUT_WRITER.printf("(9) Tempo de execução: %.3f ms%n", tempoMs);
+    }
+
+    public static void decimoExercicioNI(int ordem) {
+        long inicio = System.nanoTime();
+        formulaFechada(ordem);
+        long fim = System.nanoTime();
+        double tempoMs = (fim - inicio) / 1000000.0;
+        OUT_WRITER.printf("(10) Tempo de execução: %.3f ms%n", tempoMs);
+    }
+
     public static void main(String[] args) throws FileNotFoundException {
         if (args.length == 0) {
             MODO_INTERATIVO = true;
             imprimirMenu();
+            return;
+        } else {
+            MODO_INTERATIVO = false;
+
+            String f = null;
+            String a = null;
+            String b = null;
+            String e = null;
+            String o = null;
+            String d = null;
+
+            for (int i = 0; i < args.length; i++) {
+                switch (args[i]) {
+                    case "-f":
+                        if (i + 1 < args.length) f = args[++i];
+                        break;
+                    case "-a":
+                        if (i + 1 < args.length) a = args[++i];
+                        break;
+                    case "-b":
+                        if (i + 1 < args.length) b = args[++i];
+                        break;
+                    case "-e":
+                        if (i + 1 < args.length) e = args[++i];
+                        break;
+                    case "-o":
+                        if (i + 1 < args.length) o = "output/" + args[++i];
+                        File outFile = new File(o);
+                        OUT_WRITER = new PrintWriter(outFile);
+                        break;
+                    case "-d":
+                        if (i + 1 < args.length) d = args[++i]; // dimensao
+                }
+            }
+
+            if (f == null) {
+                System.out.println("Erro: parâmetro obrigatório -f");
+                System.exit(1);
+            }
+
+            if (OUT_WRITER == null) {
+                System.out.println("Erro: parâmetro obrigatório -o");
+                System.exit(1);
+            }
+
+
+            int funcionalidade;
+            try {
+                funcionalidade = Integer.parseInt(f);
+            } catch (NumberFormatException ex) {
+                OUT_WRITER.println("Erro: o parametro f não é inteiro");
+                return;
+            }
+            //System.out.println("Funcionalidade (-f): " + funcionalidade);
+            //System.out.println("Ficheiro A (-a): " + a);
+            //System.out.println("Ficheiro B (-b): " + b);
+            //System.out.println("Ficheiro E (-e): " + e);
+            //System.out.println("Output (-o): " + o);
+            //System.out.println("Dimensao (-d): " + d);
+
+            switch (funcionalidade) {
+                case 1:
+                    if (a == null) {
+                        OUT_WRITER.println("O parametro -a não foi fornecido");
+                        return;
+                    }
+                    primeiroExercicioNI(a);
+                    break;
+                case 2:
+                    if (a == null) {
+                        OUT_WRITER.println("O parametro -a não foi fornecido");
+                        return;
+                    }
+                    segundoExercicioNI(a);
+                    break;
+                case 3:
+                    if (a == null || b == null) {
+                        OUT_WRITER.println("Um dos parametros (a ou b) nao foi fornecido.");
+                        return;
+                    }
+                    terceiroExercicioNI(a, b);
+                    break;
+                case 4:
+                    if (a == null) {
+                        OUT_WRITER.println("O parametro -a não foi fornecido");
+                        return;
+                    }
+                    quartoExercicioNI(a);
+                    break;
+                case 5:
+                    if (e == null) {
+                        OUT_WRITER.println("O parametro -e não foi fornecido");
+                        return;
+                    }
+                    quintoExercicioNI(e);
+                    break;
+                case 6:
+                    if (Integer.parseInt(d) <= 0 || d == null) {
+                        OUT_WRITER.println("A dimensão é invalida ou nao foi fornecida");
+                        return;
+                    }
+                    sextoExercicioNI(Integer.parseInt(d));
+                    break;
+                case 7:
+                    if (Integer.parseInt(d) <= 0 || d == null) {
+                        OUT_WRITER.println("A dimensão é invalida ou nao foi fornecida");
+                        return;
+                    }
+                    setimoExercicioNI(Integer.parseInt(d));
+                    break;
+                case 8:
+                    if (a == null || e == null) {
+                        OUT_WRITER.println("Um dos parametros (a ou e) nao foi fornecido.");
+                        return;
+                    }
+                    oitavoExercicioNI(a, e);
+                    break;
+                case 9:
+                    if (Integer.parseInt(d) <= 0 || d == null) {
+                        OUT_WRITER.println("A dimensão é invalida ou nao foi fornecida");
+                        return;
+                    }
+                    nonoExercicioNI(Integer.parseInt(d));
+                    break;
+                case 10:
+                    if (Integer.parseInt(d) <= 0 || d == null) {
+                        OUT_WRITER.println("A dimensão é invalida ou nao foi fornecida");
+                        return;
+                    }
+                    decimoExercicioNI(Integer.parseInt(d));
+                    break;
+                default:
+                    OUT_WRITER.println("-f tem de estar no intervalo 1-10!");
+                    System.exit(1);
+
+            }
+
+            if (OUT_WRITER != null) {
+                OUT_WRITER.flush();
+                OUT_WRITER.close();
+            }
         }
     }
 }
